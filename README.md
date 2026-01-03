@@ -12,8 +12,8 @@ It works with raylib version 5.0. Tested on both Windows 10 and Windows 11.
 The template now uses folders for better organizion of the files. So, all the source code now lives in the src folder.
 
 # Video Tutorial
-
 <p align="center">
   <img src="preview.jpg" alt="" width="800">
 </p>
 
+<p>Work starts on the project!</p>
