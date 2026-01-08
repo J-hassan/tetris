@@ -1,25 +1,34 @@
 #pragma once
 #include "grid.h"
-#include <vector>
 #include "blocks.cpp"
 
 class Game
 {
 public:
     Game();
-    Block getrandomBlock();
-    std::vector<Block> getAllBlocks();
+    ~Game();
     void Draw();
-    void handleInput();
-    void moveBlockLeft();
-    void moveBlockRight();
-    void moveBlockDown();
-    Grid grid;
+    void HandleInput();
+    void MoveBlockDown();
+    bool gameOver;
+    int score;
+    Music music;
 
 private:
-    bool isBlockOutside();
-    void rotateBlock();
+    void MoveBlockLeft();
+    void MoveBlockRight();
+    Block GetRandomBlock();
+    std::vector<Block> GetAllBlocks();
+    bool IsBlockOutside();
+    void RotateBlock();
+    void LockBlock();
+    bool BlockFits();
+    void Reset();
+    void UpdateScore(int linesCleared, int moveDownPoints);
+    Grid grid;
     std::vector<Block> blocks;
     Block currentBlock;
     Block nextBlock;
+    Sound rotateSound;
+    Sound clearSound;
 };
