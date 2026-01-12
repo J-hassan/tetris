@@ -15,7 +15,7 @@ public:
     Music music;
     bool isPaused = false;
     void Reset();
-    void HandleMenuInput();
+    void HardDrop();
 
 private:
     void MoveBlockLeft();

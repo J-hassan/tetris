@@ -1,4 +1,5 @@
 #include "game.h"
+#include "game.h"
 #include <random>
 
 Game::Game()
@@ -81,6 +82,9 @@ void Game::HandleInput()
         break;
     case KEY_UP:
         RotateBlock();
+        break;
+    case KEY_SPACE:
+        HardDrop();
         break;
     }
 }
@@ -196,25 +200,6 @@ void Game::Reset()
     isPaused = false;
 }
 
-void Game::HandleMenuInput()
-{
-    enum GameState { MENU, PLAYING, HIGHSCORE, HELP, PAUSED };
-    GameState currentState = MENU;
-
-    if (IsKeyPressed(KEY_ONE)) {
-            if (currentState == MENU || currentState == PAUSED || gameOver) {
-                Reset();
-                currentState = PLAYING;
-            }
-        }
-        if (IsKeyPressed(KEY_TWO)) currentState = HIGHSCORE;
-        if (IsKeyPressed(KEY_THREE)) currentState = HELP;
-        if (IsKeyPressed(KEY_FOUR)) CloseWindow();
-        if (IsKeyPressed(KEY_FIVE) && currentState == PAUSED) currentState = PLAYING;
-        
-        if (IsKeyPressed(KEY_P) && currentState == PLAYING) currentState = PAUSED;
-}
-
 void Game::UpdateScore(int linesCleared, int moveDownPoints)
 {
     switch (linesCleared)
@@ -233,4 +218,13 @@ void Game::UpdateScore(int linesCleared, int moveDownPoints)
     }
 
     score += moveDownPoints;
+}
+
+void Game::HardDrop()
+{
+    while(BlockFits()){
+        currentBlock.Move(1,0);
+    }
+    currentBlock.Move(-1,0);
+    LockBlock();
 }
