@@ -16,6 +16,7 @@ public:
     bool isPaused = false;
     void Reset();
     void HardDrop();
+    void DrawGhostPiece();
 
 private:
     void MoveBlockLeft();
@@ -26,6 +27,7 @@ private:
     void RotateBlock();
     void LockBlock();
     bool BlockFits();
+    bool BlockFits(Block& block);
     void UpdateScore(int linesCleared, int moveDownPoints);
     Grid grid;
     std::vector<Block> blocks;

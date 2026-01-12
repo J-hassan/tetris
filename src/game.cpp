@@ -1,5 +1,4 @@
 #include "game.h"
-#include "game.h"
 #include <random>
 
 Game::Game()
@@ -45,6 +44,7 @@ std::vector<Block> Game::GetAllBlocks()
 void Game::Draw()
 {
     grid.Draw();
+    DrawGhostPiece();
     currentBlock.Draw(11, 11);
     switch (nextBlock.id)
     {
@@ -176,17 +176,38 @@ void Game::LockBlock()
     }
 }
 
-bool Game::BlockFits()
+// bool Game::BlockFits()
+// {
+//     std::vector<Position> tiles = currentBlock.GetCellPositions();
+//     for (Position item : tiles)
+//     {
+//         if (grid.IsCellEmpty(item.row, item.column) == false)
+//         {
+//             return false;
+//         }
+//     }
+//     return true;
+// }
+
+// Overloaded Function
+bool Game::BlockFits(Block& block) 
 {
-    std::vector<Position> tiles = currentBlock.GetCellPositions();
+    std::vector<Position> tiles = block.GetCellPositions();
     for (Position item : tiles)
     {
-        if (grid.IsCellEmpty(item.row, item.column) == false)
-        {
+        if (grid.IsCellOutside(item.row, item.column)) {
+            return false;
+        }
+        if (grid.IsCellEmpty(item.row, item.column) == false) {
             return false;
         }
     }
     return true;
+}
+
+bool Game::BlockFits() 
+{
+    return BlockFits(currentBlock); 
 }
 
 void Game::Reset()
@@ -227,4 +248,16 @@ void Game::HardDrop()
     }
     currentBlock.Move(-1,0);
     LockBlock();
+}
+
+void Game::DrawGhostPiece()
+{
+    Block ghost = currentBlock; 
+    
+    while (BlockFits(ghost)) 
+    {
+        ghost.Move(1, 0);
+    }
+    ghost.Move(-1, 0); 
+    ghost.Draw(11, 11, Fade(WHITE, 0.3f)); 
 }
