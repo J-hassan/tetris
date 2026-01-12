@@ -192,6 +192,27 @@ void Game::Reset()
     currentBlock = GetRandomBlock();
     nextBlock = GetRandomBlock();
     score = 0;
+    gameOver = false;
+    isPaused = false;
+}
+
+void Game::HandleMenuInput()
+{
+    enum GameState { MENU, PLAYING, HIGHSCORE, HELP, PAUSED };
+    GameState currentState = MENU;
+
+    if (IsKeyPressed(KEY_ONE)) {
+            if (currentState == MENU || currentState == PAUSED || gameOver) {
+                Reset();
+                currentState = PLAYING;
+            }
+        }
+        if (IsKeyPressed(KEY_TWO)) currentState = HIGHSCORE;
+        if (IsKeyPressed(KEY_THREE)) currentState = HELP;
+        if (IsKeyPressed(KEY_FOUR)) CloseWindow();
+        if (IsKeyPressed(KEY_FIVE) && currentState == PAUSED) currentState = PLAYING;
+        
+        if (IsKeyPressed(KEY_P) && currentState == PLAYING) currentState = PAUSED;
 }
 
 void Game::UpdateScore(int linesCleared, int moveDownPoints)

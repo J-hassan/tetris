@@ -13,6 +13,9 @@ public:
     bool gameOver;
     int score;
     Music music;
+    bool isPaused = false;
+    void Reset();
+    void HandleMenuInput();
 
 private:
     void MoveBlockLeft();
@@ -23,7 +26,6 @@ private:
     void RotateBlock();
     void LockBlock();
     bool BlockFits();
-    void Reset();
     void UpdateScore(int linesCleared, int moveDownPoints);
     Grid grid;
     std::vector<Block> blocks;
