@@ -4,6 +4,5 @@
 1. Classes (OOP)
 2. STL (Vectors and Maps)
 
-<p align="center">
-  <img src="preview.jpg" alt="" width="960">
-</p>
+# Let's start with 
+# Tetris
