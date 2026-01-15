@@ -1,6 +1,7 @@
 #pragma once
 #include "grid.h"
 #include "blocks.cpp"
+#include "randomizer.h"
 
 class Game
 {
@@ -43,4 +44,6 @@ private:
     Sound holdSound;
 
     void HoldBack();
+
+    Randomizer randomizer;
 };

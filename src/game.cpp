@@ -4,9 +4,9 @@
 Game::Game()
 {
     grid = Grid();
-    blocks = GetAllBlocks();
-    currentBlock = GetRandomBlock();
-    nextBlock = GetRandomBlock();
+    currentBlock = randomizer.GetNextBlock();
+    nextBlock = randomizer.GetNextBlock();
+
     gameOver = false;
     score = 0;
     InitAudioDevice();
@@ -35,14 +35,7 @@ Game::~Game()
 
 Block Game::GetRandomBlock()
 {
-    if (blocks.empty())
-    {
-        blocks = GetAllBlocks();
-    }
-    int randomIndex = rand() % blocks.size();
-    Block block = blocks[randomIndex];
-    blocks.erase(blocks.begin() + randomIndex);
-    return block;
+    return randomizer.GetNextBlock();
 }
 
 std::vector<Block> Game::GetAllBlocks()
@@ -244,9 +237,9 @@ bool Game::BlockFits()
 void Game::Reset()
 {
     grid.Initialize();
-    blocks = GetAllBlocks();
-    currentBlock = GetRandomBlock();
-    nextBlock = GetRandomBlock();
+    randomizer.Reset();
+    currentBlock = randomizer.GetNextBlock();
+    nextBlock = randomizer.GetNextBlock();
     score = 0;
     gameOver = false;
     isPaused = false;
