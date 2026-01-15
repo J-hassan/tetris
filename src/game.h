@@ -36,4 +36,11 @@ private:
     Sound rotateSound;
     Sound clearSound;
     Sound hardDropSound;
+
+    Block heldBack;
+    bool canHold;
+    bool hasHeldBlock;
+    Sound holdSound;
+
+    void HoldBack();
 };

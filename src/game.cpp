@@ -15,6 +15,12 @@ Game::Game()
     rotateSound = LoadSound("Sounds/rotate.mp3");
     clearSound = LoadSound("Sounds/clear.mp3");
     hardDropSound = LoadSound("Sounds/harddrop.mp3");
+
+    canHold = true;
+    hasHeldBlock = false;
+    holdSound = LoadSound("Sounds/hold.mp3");
+
+    heldBack = IBlock();
 }
 
 Game::~Game()
@@ -22,6 +28,7 @@ Game::~Game()
     UnloadSound(rotateSound);
     UnloadSound(clearSound);
     UnloadSound(hardDropSound);
+    UnloadSound(holdSound);
     UnloadMusicStream(music);
     CloseAudioDevice();
 }
@@ -60,6 +67,24 @@ void Game::Draw()
         nextBlock.Draw(270, 270);
         break;
     }
+    if(hasHeldBlock)
+    {
+        DrawRectangleRounded({320, 410, 170, 60}, 0.3, 6, lightBlue);
+        DrawText("Hold", 370, 415, 25, WHITE);
+
+        switch(heldBack.id)
+        {
+            case 3:
+                heldBack.Draw(255, 445);
+                break;
+            case 4:
+                heldBack.Draw(255, 435);
+                break;
+            default:
+                heldBack.Draw(270, 445);
+                break;
+        }
+    }
 }
 
 void Game::HandleInput()
@@ -88,6 +113,9 @@ void Game::HandleInput()
     case KEY_SPACE:
         HardDrop();
         break;
+    case KEY_C:
+        HoldBack();
+        break;    
     }
 }
 
@@ -176,6 +204,7 @@ void Game::LockBlock()
         PlaySound(clearSound);
         UpdateScore(rowsCleared, 0);
     }
+    canHold = true;
 }
 
 // bool Game::BlockFits()
@@ -221,6 +250,8 @@ void Game::Reset()
     score = 0;
     gameOver = false;
     isPaused = false;
+    canHold = true;
+    hasHeldBlock = false;
 }
 
 void Game::UpdateScore(int linesCleared, int moveDownPoints)
@@ -265,6 +296,30 @@ void Game::HardDrop()
     LockBlock();
 
     PlaySound(hardDropSound);
+}
+
+void Game::HoldBack()
+{
+    if(gameOver || !canHold) 
+    return;
+
+    if (!hasHeldBlock)
+    {
+        heldBack = currentBlock;
+        currentBlock = nextBlock;
+        nextBlock = GetRandomBlock();
+        hasHeldBlock = true;
+    }
+    else
+    {
+        Block temp = currentBlock;
+        currentBlock = heldBack;
+        heldBack = temp;
+        currentBlock.ResetPosition();
+    }
+    canHold = false;
+
+    PlaySound(holdSound);
 }
 
 void Game::DrawGhostPiece()
