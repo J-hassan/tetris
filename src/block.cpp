@@ -55,3 +55,17 @@ void Block::UndoRotation()
         rotationState = cells.size() - 1;
     }
 }
+
+void Block::ResetPosition()
+{
+    if(id == 3)
+    {
+        rowOffset = -1;
+        columnOffset = 3;
+    }
+    else{
+        rowOffset = 0;
+        columnOffset = 3;
+    }
+    rotationState = 0;
+}
