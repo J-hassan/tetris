@@ -70,18 +70,18 @@ void Game::Draw()
     if(hasHeldBlock)
     {
         DrawRectangleRounded({320, 410, 170, 60}, 0.3, 6, lightBlue);
-        DrawText("Hold", 365, 415, 38, WHITE);
+        DrawText("Hold", 370, 415, 25, WHITE);
 
         switch(heldBack.id)
         {
             case 3:
-                heldBack.Draw(340, 445);
+                heldBack.Draw(255, 445);
                 break;
             case 4:
-                heldBack.Draw(345, 450);
+                heldBack.Draw(255, 435);
                 break;
             default:
-                heldBack.Draw(350, 450);
+                heldBack.Draw(270, 445);
                 break;
         }
     }
