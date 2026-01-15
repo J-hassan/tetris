@@ -35,4 +35,5 @@ private:
     Block nextBlock;
     Sound rotateSound;
     Sound clearSound;
+    Sound hardDropSound;
 };

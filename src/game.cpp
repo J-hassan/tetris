@@ -14,12 +14,14 @@ Game::Game()
     PlayMusicStream(music);
     rotateSound = LoadSound("Sounds/rotate.mp3");
     clearSound = LoadSound("Sounds/clear.mp3");
+    hardDropSound = LoadSound("Sounds/harddrop.mp3");
 }
 
 Game::~Game()
 {
     UnloadSound(rotateSound);
     UnloadSound(clearSound);
+    UnloadSound(hardDropSound);
     UnloadMusicStream(music);
     CloseAudioDevice();
 }
@@ -243,11 +245,26 @@ void Game::UpdateScore(int linesCleared, int moveDownPoints)
 
 void Game::HardDrop()
 {
+    if (gameOver) return;
+
+    int dropDistance = 0;
+
     while(BlockFits()){
         currentBlock.Move(1,0);
+        dropDistance++;
     }
+    if (dropDistance > 0)
+    {
     currentBlock.Move(-1,0);
+    }
+
+    if(dropDistance > 0)
+    {
+        UpdateScore(0,dropDistance*2);
+    }
     LockBlock();
+
+    PlaySound(hardDropSound);
 }
 
 void Game::DrawGhostPiece()
