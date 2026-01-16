@@ -18,6 +18,7 @@ public:
     void Reset();
     void HardDrop();
     void DrawGhostPiece();
+    bool TryWallKicks(int oldRotation, int newRotation);
 
 private:
     void MoveBlockLeft();

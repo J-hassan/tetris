@@ -1,5 +1,6 @@
 #include "game.h"
 #include <random>
+#include "wallKicks.h"
 
 Game::Game()
 {
@@ -166,16 +167,44 @@ void Game::RotateBlock()
 {
     if (!gameOver)
     {
+        int oldRotation = currentBlock.GetRotationState();
         currentBlock.Rotate();
+        int newRotation = currentBlock.GetRotationState();
         if (IsBlockOutside() || BlockFits() == false)
         {
+            bool kickSuccess = TryWallKicks(oldRotation, newRotation);
+            if(!kickSuccess)
+            {
             currentBlock.UndoRotation();
+            }
         }
         else
         {
             PlaySound(rotateSound);
         }
     }
+}
+
+bool Game::TryWallKicks(int oldRotation, int newRotation)
+{
+    std::vector<WallKick> wallKicks = WallKicks::GetWallKicksForBlock(currentBlock.id);
+    for (const auto& kick : wallKicks)
+    {
+        if (kick.fromState == oldRotation && kick.toState == newRotation)
+        {
+            for (const auto& offset : kick.tests)
+            {
+                currentBlock.Move(offset.row, offset.column);
+                if (!IsBlockOutside() && BlockFits())
+                {
+                    PlaySound(rotateSound);
+                    return true;
+                }
+                currentBlock.Move(-offset.row, -offset.column);
+            }
+        }
+    }
+    return false;
 }
 
 void Game::LockBlock()
@@ -324,5 +353,6 @@ void Game::DrawGhostPiece()
         ghost.Move(1, 0);
     }
     ghost.Move(-1, 0); 
-    ghost.Draw(11, 11, Fade(WHITE, 0.3f)); 
+
+    ghost.Draw(11, 11, Color{255, 255, 255, 102}); 
 }

@@ -14,6 +14,8 @@ public:
     void Rotate();
     void UndoRotation();
     void ResetPosition();
+    int GetRotationState() const {return rotationState;}
+    void SetRotationState(int state) {rotationState = state;}
     int id;
     std::map<int, std::vector<Position>> cells;
 
