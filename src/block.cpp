@@ -74,3 +74,10 @@ void Block::ResetPosition()
     }
     rotationState = 0;
 }
+
+void Block::ResetForHoldDisplay()
+{
+    rowOffset = 0;
+    columnOffset = 0;
+    rotationState = 0;
+}

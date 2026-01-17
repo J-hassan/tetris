@@ -16,6 +16,9 @@ public:
     void ResetPosition();
     int GetRotationState() const {return rotationState;}
     void SetRotationState(int state) {rotationState = state;}
+    void SetRowOffset(int offset) { rowOffset = offset; }
+    void SetColumnOffset(int offset) { columnOffset = offset; }
+    void ResetForHoldDisplay();
     int id;
     std::map<int, std::vector<Position>> cells;
 

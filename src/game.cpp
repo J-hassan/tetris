@@ -5,8 +5,9 @@
 Game::Game()
 {
     grid = Grid();
-    currentBlock = randomizer.GetNextBlock();
-    nextBlock = randomizer.GetNextBlock();
+    blocks = GetAllBlocks();
+    currentBlock = GetRandomBlock();
+    nextBlock = GetRandomBlock();
 
     gameOver = false;
     score = 0;
@@ -36,7 +37,14 @@ Game::~Game()
 
 Block Game::GetRandomBlock()
 {
-    return randomizer.GetNextBlock();
+    if (blocks.empty())
+    {
+        blocks = GetAllBlocks();
+    }
+    int randomIndex = rand() % blocks.size();
+    Block block = blocks[randomIndex];
+    blocks.erase(blocks.begin() + randomIndex);
+    return block;
 }
 
 std::vector<Block> Game::GetAllBlocks()
@@ -63,21 +71,24 @@ void Game::Draw()
     }
     if(hasHeldBlock)
     {
-        DrawRectangleRounded({320, 410, 170, 60}, 0.3, 6, lightBlue);
-        DrawText("Hold", 370, 415, 25, WHITE);
+        DrawText("Hold", 380, 450, 25, WHITE);
 
+        DrawRectangleRounded({320, 480, 170, 100}, 0.3, 6, lightBlue);
+        
         switch(heldBack.id)
         {
             case 3:
-                heldBack.Draw(255, 445);
+                heldBack.Draw(345,490);
                 break;
             case 4:
-                heldBack.Draw(255, 435);
+                heldBack.Draw(375, 500);
                 break;
             default:
-                heldBack.Draw(270, 445);
+                heldBack.Draw(362, 495);
                 break;
         }
+       
+
     }
 }
 
@@ -266,9 +277,9 @@ bool Game::BlockFits()
 void Game::Reset()
 {
     grid.Initialize();
-    randomizer.Reset();
-    currentBlock = randomizer.GetNextBlock();
-    nextBlock = randomizer.GetNextBlock();
+    blocks = GetAllBlocks();
+    currentBlock = GetRandomBlock();
+    nextBlock = GetRandomBlock();
     score = 0;
     gameOver = false;
     isPaused = false;
@@ -328,7 +339,27 @@ void Game::HoldBack()
     if (!hasHeldBlock)
     {
         heldBack = currentBlock;
+        heldBack.ResetForHoldDisplay();
+
+        if(heldBack.id == 3) 
+        {
+            heldBack.ResetPosition();
+            heldBack.Move(1,-3); 
+        } 
+        else if (heldBack.id == 4) 
+        {
+            heldBack.ResetPosition();
+            heldBack.Move(0, -4); 
+        } 
+        else 
+        {
+            heldBack.ResetPosition();
+            heldBack.Move(0, -3); 
+        }
+
         currentBlock = nextBlock;
+        currentBlock.ResetPosition();
+
         nextBlock = GetRandomBlock();
         hasHeldBlock = true;
     }
@@ -336,8 +367,23 @@ void Game::HoldBack()
     {
         Block temp = currentBlock;
         currentBlock = heldBack;
-        heldBack = temp;
         currentBlock.ResetPosition();
+
+        heldBack = temp;
+        if (heldBack.id == 3) 
+        {
+            heldBack.ResetPosition();   
+            heldBack.Move(1, -3);
+        } 
+        else if (heldBack.id == 4) 
+        {
+            heldBack.ResetPosition();   
+            heldBack.Move(0, -4);
+        } else 
+        {
+            heldBack.ResetPosition();
+            heldBack.Move(0, -3);
+        }
     }
     canHold = false;
 
