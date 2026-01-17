@@ -19,6 +19,9 @@ public:
     void HardDrop();
     void DrawGhostPiece();
     bool TryWallKicks(int oldRotation, int newRotation);
+    int level;
+    float gameTimer;
+    int difficultyLevel;
 
 private:
     void MoveBlockLeft();

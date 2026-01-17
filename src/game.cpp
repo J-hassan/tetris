@@ -19,6 +19,9 @@ Game::Game()
     hardDropSound = LoadSound("Sounds/harddrop.mp3");
 
     scoreSaved = false;
+    level = 1; 
+    gameTimer = 0.0f;
+    difficultyLevel = 1;
 
     canHold = true;
     hasHeldBlock = false;
@@ -37,8 +40,28 @@ Game::~Game()
     CloseAudioDevice();
 }
 
+void Game::Reset()
+{
+    grid.Initialize();
+    blocks = GetAllBlocks();
+    currentBlock = GetRandomBlock();
+    nextBlock = GetRandomBlock();
+    score = 0;
+    gameOver = false;
+    isPaused = false;
+    canHold = true;
+    hasHeldBlock = false;
+    scoreSaved = false;
+    level = 1; 
+    gameTimer = 0.0f;
+    difficultyLevel = 1;
+}
+
 Block Game::GetRandomBlock()
 {
+
+
+
     if (blocks.empty())
     {
         blocks = GetAllBlocks();
@@ -242,19 +265,6 @@ void Game::LockBlock()
     canHold = true;
 }
 
-// bool Game::BlockFits()
-// {
-//     std::vector<Position> tiles = currentBlock.GetCellPositions();
-//     for (Position item : tiles)
-//     {
-//         if (grid.IsCellEmpty(item.row, item.column) == false)
-//         {
-//             return false;
-//         }
-//     }
-//     return true;
-// }
-
 // Overloaded Function
 bool Game::BlockFits(Block& block) 
 {
@@ -274,20 +284,6 @@ bool Game::BlockFits(Block& block)
 bool Game::BlockFits() 
 {
     return BlockFits(currentBlock); 
-}
-
-void Game::Reset()
-{
-    grid.Initialize();
-    blocks = GetAllBlocks();
-    currentBlock = GetRandomBlock();
-    nextBlock = GetRandomBlock();
-    score = 0;
-    gameOver = false;
-    isPaused = false;
-    canHold = true;
-    hasHeldBlock = false;
-    scoreSaved = false;
 }
 
 void Game::UpdateScore(int linesCleared, int moveDownPoints)

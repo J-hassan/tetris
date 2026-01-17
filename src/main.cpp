@@ -5,8 +5,9 @@
 #include "highScore.h"
 
 double lastUpdateTime = 0;
+double interval = 0.5; // Default interval of 0.5 seconds
 
-bool EventTriggered(double interval)
+bool EventTriggered()
 {
     double currentTime = GetTime();
     if (currentTime - lastUpdateTime >= interval)
@@ -24,7 +25,8 @@ enum GameState
     PLAYING,
     HIGHSCORE,
     HELP,
-    PAUSED
+    PAUSED,
+    MODE
 };
 GameState currentState = MENU;
 void HandleMenuInput(Game &game)
@@ -42,6 +44,8 @@ void HandleMenuInput(Game &game)
     if (IsKeyPressed(KEY_THREE))
         currentState = HELP;
     if (IsKeyPressed(KEY_FOUR))
+        currentState = MODE;
+    if (IsKeyPressed(KEY_FIVE))
         CloseWindow();
     if (IsKeyPressed(KEY_FIVE) && currentState == PAUSED)
         currentState = PLAYING;
@@ -67,12 +71,34 @@ int main()
         if (currentState == PLAYING && !game.gameOver)
         {
             game.HandleInput();
-            if (EventTriggered(0.2))
+            if (EventTriggered())
             {
                 game.MoveBlockDown();
             }
-        }
 
+            // level and timer update
+            game.gameTimer += GetFrameTime();
+            if (game.gameTimer >= 5.0f)
+            {
+                game.gameTimer = 0.0f;
+                if (game.level == 16)
+                {
+                    game.level = 16;
+                }
+                else
+                {
+                    game.level++;
+                }
+                if (game.level % 2 == 0 && interval > 0.2)
+                {
+                    interval -= 0.05;
+                    if (interval < 0.2)
+                    {
+                        interval = 0.2;
+                    }
+                }
+            }
+        }
         // 2. Drawing Section (Hamesha BeginDrawing se shuru karein)
         BeginDrawing();
         ClearBackground(darkBlue);
@@ -83,7 +109,8 @@ int main()
             DrawText("1. Start New Game", 150, 200, 20, LIGHTGRAY);
             DrawText("2. High Scores", 150, 250, 20, LIGHTGRAY);
             DrawText("3. Help", 150, 300, 20, LIGHTGRAY);
-            DrawText("4. Exit", 150, 350, 20, LIGHTGRAY);
+            DrawText("4. Difficulty Level", 150, 350, 20, LIGHTGRAY);
+            DrawText("5. Exit", 150, 400, 20, LIGHTGRAY);
         }
         else if (currentState == PLAYING || currentState == PAUSED)
         {
@@ -91,6 +118,9 @@ int main()
             DrawTextEx(font, "Score", {365, 15}, 38, 2, WHITE);
             DrawTextEx(font, "Next", {370, 175}, 38, 2, WHITE);
             DrawRectangleRounded({320, 55, 170, 60}, 0.3, 6, lightBlue);
+
+            DrawTextEx(font, "Level", {330, 120}, 38, 2, WHITE);
+            DrawTextEx(font, TextFormat("%d", game.level), {450, 120}, 38, 2, YELLOW);
 
             char scoreText[10];
             sprintf(scoreText, "%d", game.score);
@@ -142,6 +172,25 @@ int main()
             DrawText("Press 'M' for Menu", 150, 550, 20, LIGHTGRAY);
             if (IsKeyPressed(KEY_M))
                 currentState = MENU;
+        }
+        else if (currentState == MODE)
+        {
+            DrawText("Select Difficulty Level", 150, 100, 30, WHITE);
+            DrawText("B: Beginner", 120, 200, 20, LIGHTGRAY);
+            DrawText("A: Advance", 120, 250, 20, LIGHTGRAY);
+            DrawText("Press 'M' for Menu", 150, 350, 20, LIGHTGRAY);
+            if (IsKeyPressed(KEY_M))
+            {
+                currentState = MENU;
+            }
+            if (IsKeyPressed(KEY_B))
+            {
+                game.difficultyLevel = 1;
+            }
+            if(IsKeyPressed(KEY_A))
+            {
+                game.difficultyLevel = 2;
+            }
         }
 
         EndDrawing();
