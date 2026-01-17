@@ -1,6 +1,7 @@
 #pragma once
 #include "grid.h"
 #include "blocks.cpp"
+#include "effects.h"  // NEW: Include effects
 
 class Game
 {
@@ -22,6 +23,10 @@ public:
     int level;
     float gameTimer;
     int difficultyLevel;
+    
+    // NEW: Public effects access
+    Effects* GetEffects() { return effects; }
+    int combo;  // NEW: For combo tracking
 
 private:
     void MoveBlockLeft();
@@ -48,4 +53,8 @@ private:
     Sound holdSound;
 
     void HoldBack();
+    
+    // NEW: Effects system
+    Effects* effects;
+    int lastClearedLines;  // Track for combo
 };

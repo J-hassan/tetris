@@ -28,6 +28,11 @@ Game::Game()
     holdSound = LoadSound("Sounds/hold.mp3");
 
     heldBack = IBlock();
+    
+    // NEW: Initialize effects
+    effects = new Effects();
+    combo = 0;
+    lastClearedLines = 0;
 }
 
 Game::~Game()
@@ -38,6 +43,9 @@ Game::~Game()
     UnloadSound(holdSound);
     UnloadMusicStream(music);
     CloseAudioDevice();
+    
+    // NEW: Cleanup effects
+    delete effects;
 }
 
 void Game::Reset()
@@ -55,6 +63,11 @@ void Game::Reset()
     level = 1; 
     gameTimer = 0.0f;
     difficultyLevel = 1;
+    
+    // NEW: Reset effects
+    effects->Reset();
+    combo = 0;
+    lastClearedLines = 0;
 }
 
 Block Game::GetRandomBlock()
@@ -257,22 +270,65 @@ bool Game::TryWallKicks(int oldRotation, int newRotation)
 void Game::LockBlock()
 {
     std::vector<Position> tiles = currentBlock.GetCellPositions();
+    
+    // NEW: Add landing effect
+    std::vector<Color> colors = GetCellColors();
+    effects->StartLandingEffect(tiles, colors[currentBlock.id]);
+    
     for (Position item : tiles)
     {
         grid.grid[item.row][item.column] = currentBlock.id;
     }
+    
     currentBlock = nextBlock;
     if (BlockFits() == false)
     {
         gameOver = true;
     }
     nextBlock = GetRandomBlock();
+    
+    // NEW: Get rows before clearing for animation
+    std::vector<int> fullRows;
+    for (int row = 0; row < 20; row++) {
+        bool isFull = true;
+        for (int col = 0; col < 10; col++) {
+            if (grid.grid[row][col] == 0) {
+                isFull = false;
+                break;
+            }
+        }
+        if (isFull) fullRows.push_back(row);
+    }
+    
+    // NEW: Start line clear animation if rows found
+    if (!fullRows.empty()) {
+        effects->StartLineClearAnimation(fullRows);
+        
+        // Trigger screen shake for Tetris (4 lines)
+        if (fullRows.size() == 4) {
+            effects->StartScreenShake(8.0f, 0.3f);
+        } else if (fullRows.size() >= 2) {
+            effects->StartScreenShake(4.0f, 0.2f);
+        }
+    }
+    
     int rowsCleared = grid.ClearFullRows();
     if (rowsCleared > 0)
     {
         PlaySound(clearSound);
+        
+        // NEW: Combo system
+        combo++;
+        if (combo > 1) {
+            effects->StartComboDisplay(combo, {250, 300});
+        }
+        
         UpdateScore(rowsCleared, 0);
+    } else {
+        // NEW: Reset combo if no lines cleared
+        combo = 0;
     }
+    
     canHold = true;
 }
 
@@ -297,28 +353,19 @@ bool Game::BlockFits()
     return BlockFits(currentBlock); 
 }
 
-void Game::UpdateScore(int linesCleared , int moveDownPoints) {
-    int basePoints = 0;
+void Game::UpdateScore(int linesCleared, int moveDownPoints) {
+    int points = 0;
+    
     switch (linesCleared) {
-        case 1: 
-            basePoints = 10; 
-            break;
-        case 2: 
-            basePoints = 30; 
-            break;
-        case 3: 
-            basePoints = 60; 
-            break;
-        case 4: 
-            basePoints = 100; 
-            break;
-        default: 
-            basePoints = 0; 
-            break;
+        case 1: points = 10; break;
+        case 2: points = 30; break;
+        case 3: points = 60; break;
+        case 4: points = 100; break;
+        default: points = 0; break;
     }
-    score += (basePoints * difficultyLevel);
-}
 
+    score += (points * difficultyLevel);
+}
 void Game::HardDrop()
 {
     if (gameOver) return;

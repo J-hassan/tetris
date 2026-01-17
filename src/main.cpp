@@ -1,4 +1,5 @@
 #include <raylib.h>
+#include <rlgl.h>  
 #include "game.h"
 #include "colors.h"
 #include <iostream>
@@ -28,7 +29,9 @@ enum GameState
     PAUSED,
     MODE
 };
+
 GameState currentState = MENU;
+
 void HandleMenuInput(Game &game)
 {
     if (IsKeyPressed(KEY_ONE))
@@ -65,20 +68,27 @@ int main()
     {
         UpdateMusicStream(game.music);
 
-        // 1. Logic aur Input Handling
+        // 1. Logic and Input Handling
         HandleMenuInput(game);
 
         if (currentState == PLAYING && !game.gameOver)
         {
-            game.HandleInput();
-            if (EventTriggered())
+            // NEW: Update effects system
+            game.GetEffects()->Update(GetFrameTime());
+            
+            // Only process game logic if no line clear animation is active
+            if (!game.GetEffects()->HasActiveLineClearAnimation()) 
             {
-                game.MoveBlockDown();
+                game.HandleInput();
+                if (EventTriggered())
+                {
+                    game.MoveBlockDown();
+                }
             }
 
-            // level and timer update
+            // Level and timer update
             game.gameTimer += GetFrameTime();
-            if (game.gameTimer >= 5.0f)
+            if (game.gameTimer >= 60.0f)
             {
                 game.gameTimer = 0.0f;
                 if (game.level == 16)
@@ -88,6 +98,9 @@ int main()
                 else
                 {
                     game.level++;
+                    
+                    // NEW: Trigger level up particle effect
+                    game.GetEffects()->AddLevelUpEffect({250, 300});
                 }
                 if (game.level % 2 == 0 && interval > 0.2)
                 {
@@ -99,8 +112,17 @@ int main()
                 }
             }
         }
-        // 2. Drawing Section 
+
+        // NEW: Get screen shake offset for camera
+        Vector2 shakeOffset = game.GetEffects()->GetScreenShakeOffset();
+
+        // 2. Drawing Section
         BeginDrawing();
+        
+        // NEW: Apply screen shake by translating the entire scene
+        rlPushMatrix();
+        rlTranslatef(shakeOffset.x, shakeOffset.y, 0);
+        
         ClearBackground(darkBlue);
 
         if (currentState == MENU)
@@ -122,14 +144,24 @@ int main()
             DrawTextEx(font, "Level", {330, 120}, 38, 2, WHITE);
             DrawTextEx(font, TextFormat("%d", game.level), {450, 120}, 38, 2, YELLOW);
 
+            // NEW: Display combo counter if combo is active
+            if (game.combo > 1) 
+            {
+                DrawTextEx(font, TextFormat("Combo: x%d", game.combo), 
+                          {320, 160}, 30, 2, ORANGE);
+            }
+
             char scoreText[10];
             sprintf(scoreText, "%d", game.score);
             Vector2 textSize = MeasureTextEx(font, scoreText, 38, 2);
             DrawTextEx(font, scoreText, {320 + (170 - textSize.x) / 2, 65}, 38, 2, WHITE);
             DrawRectangleRounded({320, 215, 170, 180}, 0.3, 6, lightBlue);
 
-            // Game Draw
+            // Game Draw (grid, blocks, ghost piece, hold piece)
             game.Draw();
+            
+            // NEW: Draw all visual effects (particles, animations, combo text, etc.)
+            game.GetEffects()->Draw();
 
             if (game.gameOver)
             {
@@ -168,7 +200,9 @@ int main()
         {
             DrawText("HOW TO PLAY", 150, 100, 30, WHITE);
             DrawText("Arrows: Move & Rotate", 120, 200, 20, LIGHTGRAY);
-            DrawText("P: Pause & Resume", 120, 250, 20, LIGHTGRAY);
+            DrawText("Space: Hard Drop", 120, 250, 20, LIGHTGRAY);
+            DrawText("C: Hold Piece", 120, 300, 20, LIGHTGRAY);
+            DrawText("P: Pause & Resume", 120, 350, 20, LIGHTGRAY);
             DrawText("Press 'M' for Menu", 150, 550, 20, LIGHTGRAY);
             if (IsKeyPressed(KEY_M))
                 currentState = MENU;
@@ -195,6 +229,8 @@ int main()
             }
         }
 
+        rlPopMatrix(); // NEW: End screen shake transformation
+        
         EndDrawing();
     }
 

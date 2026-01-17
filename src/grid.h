@@ -13,6 +13,10 @@ public:
     bool IsCellEmpty(int row, int column);
     int ClearFullRows();
     int grid[20][10];
+    
+    // NEW: For grid lines toggle
+    void DrawWithGridLines();
+    bool showGridLines = true;
 
 private:
     bool IsRowFull(int row);

@@ -12,6 +12,11 @@ const Color lightBlue = {59, 85, 162, 255};
 const Color darkBlue = {44, 44, 127, 255};
 const Color Silver = {236, 240, 241, 255};
 
+// NEW: Effect colors
+const Color PARTICLE_YELLOW = {255, 255, 0, 255};
+const Color PARTICLE_ORANGE = {255, 165, 0, 255};
+const Color PARTICLE_WHITE = {255, 255, 255, 255};
+
 std::vector<Color> GetCellColors()
 {
     return {darkGrey, green, red, orange, yellow, purple, cyan, blue, Silver};

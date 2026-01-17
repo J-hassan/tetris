@@ -41,8 +41,40 @@ void Grid::Draw()
         for (int column = 0; column < numCols; column++)
         {
             int cellValue = grid[row][column];
-            DrawRectangle(column * cellSize + 11, row * cellSize + 11, cellSize - 1, cellSize - 1, colors[cellValue]);
+            DrawRectangle(column * cellSize + 11, row * cellSize + 11, 
+                         cellSize - 1, cellSize - 1, colors[cellValue]);
         }
+    }
+    
+    // NEW: Draw grid lines if enabled
+    if (showGridLines && false) { // Set to true to enable
+        for (int row = 0; row <= numRows; row++) {
+            DrawLine(11, row * cellSize + 11, 
+                    11 + numCols * cellSize, row * cellSize + 11, 
+                    Fade(GRAY, 0.3f));
+        }
+        for (int col = 0; col <= numCols; col++) {
+            DrawLine(col * cellSize + 11, 11, 
+                    col * cellSize + 11, 11 + numRows * cellSize, 
+                    Fade(GRAY, 0.3f));
+        }
+    }
+}
+
+void Grid::DrawWithGridLines()
+{
+    Draw();
+    
+    // Grid lines
+    for (int row = 0; row <= numRows; row++) {
+        DrawLine(11, row * cellSize + 11, 
+                11 + numCols * cellSize, row * cellSize + 11, 
+                Fade(WHITE, 0.2f));
+    }
+    for (int col = 0; col <= numCols; col++) {
+        DrawLine(col * cellSize + 11, 11, 
+                col * cellSize + 11, 11 + numRows * cellSize, 
+                Fade(WHITE, 0.2f));
     }
 }
 
