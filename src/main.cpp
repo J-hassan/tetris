@@ -99,7 +99,7 @@ int main()
                 }
             }
         }
-        // 2. Drawing Section (Hamesha BeginDrawing se shuru karein)
+        // 2. Drawing Section 
         BeginDrawing();
         ClearBackground(darkBlue);
 
@@ -186,10 +186,12 @@ int main()
             if (IsKeyPressed(KEY_B))
             {
                 game.difficultyLevel = 1;
+                currentState = PLAYING;
             }
             if(IsKeyPressed(KEY_A))
             {
                 game.difficultyLevel = 2;
+                currentState = PLAYING;
             }
         }
 

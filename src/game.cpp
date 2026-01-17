@@ -59,16 +59,27 @@ void Game::Reset()
 
 Block Game::GetRandomBlock()
 {
-
-
-
     if (blocks.empty())
     {
-        blocks = GetAllBlocks();
+        if (difficultyLevel == 1)
+        {
+            blocks = {IBlock(), JBlock(), LBlock(), OBlock()};
+        }
+        else 
+        {
+            blocks = GetAllBlocks(); 
+        }
     }
-    int randomIndex = rand() % blocks.size();
+
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> dist(0, blocks.size() - 1);
+    
+    int randomIndex = dist(gen); 
     Block block = blocks[randomIndex];
+    
     blocks.erase(blocks.begin() + randomIndex);
+    
     return block;
 }
 
@@ -286,24 +297,26 @@ bool Game::BlockFits()
     return BlockFits(currentBlock); 
 }
 
-void Game::UpdateScore(int linesCleared, int moveDownPoints)
-{
-    switch (linesCleared)
-    {
-    case 1:
-        score += 100;
-        break;
-    case 2:
-        score += 300;
-        break;
-    case 3:
-        score += 500;
-        break;
-    default:
-        break;
+void Game::UpdateScore(int linesCleared , int moveDownPoints) {
+    int basePoints = 0;
+    switch (linesCleared) {
+        case 1: 
+            basePoints = 10; 
+            break;
+        case 2: 
+            basePoints = 30; 
+            break;
+        case 3: 
+            basePoints = 60; 
+            break;
+        case 4: 
+            basePoints = 100; 
+            break;
+        default: 
+            basePoints = 0; 
+            break;
     }
-
-    score += moveDownPoints;
+    score += (basePoints * difficultyLevel);
 }
 
 void Game::HardDrop()
