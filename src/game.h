@@ -19,6 +19,8 @@ public:
     void DrawGhostPiece();
     bool TryWallKicks(int oldRotation, int newRotation);
 
+    void UpdateBombTimer();
+
 private:
     void MoveBlockLeft();
     void MoveBlockRight();
@@ -42,6 +44,12 @@ private:
     bool canHold;
     bool hasHeldBlock;
     Sound holdSound;
+
+    Sound bombSound;
+    Sound explosionSound;
+    float bombTimer;
+    float bombInterval;
+    void DropBomb();
 
     void HoldBack();
 };

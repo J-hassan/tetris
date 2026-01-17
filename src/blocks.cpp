@@ -95,3 +95,14 @@ public:
         Move(0, 3);
     }
 };
+
+class BombBlock : public Block
+{
+public:
+    BombBlock()
+    {
+        id = 8;
+        cells[0] = {Position(0, 0)};
+        Move(0, 0);
+    }
+};

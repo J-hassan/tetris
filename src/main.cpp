@@ -66,6 +66,7 @@ int main()
 
         if (currentState == PLAYING && !game.gameOver)
         {
+            game.UpdateBombTimer();
             game.HandleInput();
             if (EventTriggered(0.2))
             {

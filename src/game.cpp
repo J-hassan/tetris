@@ -1,5 +1,6 @@
 #include "game.h"
 #include <random>
+#include <algorithm>
 #include "wallKicks.h"
 
 Game::Game()
@@ -23,6 +24,11 @@ Game::Game()
     holdSound = LoadSound("Sounds/hold.mp3");
 
     heldBack = IBlock();
+
+    bombSound = LoadSound("Sounds/bomb.mp3");
+    explosionSound = LoadSound("Sounds/explosion.mp3");
+    bombTimer = 0.0f;
+    bombInterval = 30.0f;
 }
 
 Game::~Game()
@@ -31,6 +37,8 @@ Game::~Game()
     UnloadSound(clearSound);
     UnloadSound(hardDropSound);
     UnloadSound(holdSound);
+    UnloadSound(bombSound);      
+    UnloadSound(explosionSound);
     UnloadMusicStream(music);
     CloseAudioDevice();
 }
@@ -49,7 +57,7 @@ Block Game::GetRandomBlock()
 
 std::vector<Block> Game::GetAllBlocks()
 {
-    return {IBlock(), JBlock(), LBlock(), OBlock(), SBlock(), TBlock(), ZBlock()};
+    return {IBlock(), JBlock(), LBlock(), OBlock(), SBlock(), TBlock(), ZBlock(), BombBlock()};
 }
 
 void Game::Draw()
@@ -402,3 +410,67 @@ void Game::DrawGhostPiece()
 
     ghost.Draw(11, 11, Color{255, 255, 255, 102}); 
 }
+
+void Game::UpdateBombTimer()
+{
+    if (gameOver) return;
+    
+    bombTimer += GetFrameTime();
+    
+    if (bombTimer >= bombInterval) {
+        DropBomb();
+        bombTimer = 0.0f;
+    }
+}
+
+void Game::DropBomb()
+{
+    if (gameOver) return;
+    PlaySound(bombSound);
+    int col = rand() % 10;
+    int row = 0;
+    while (row < 20 && grid.IsCellEmpty(row, col)) 
+    {
+        row++;
+    }
+    if (row == 20) return;
+    if (!grid.IsCellEmpty(row, col)) 
+    {
+        int bombColor = grid.grid[row][col];
+        std::vector<Position> blocksToRemove;
+         bool sameColorFound = false;
+        for (int r = 0; r < 20; r++) {
+            for (int c = 0; c < 10; c++) {
+                if (grid.grid[r][c] == bombColor) {
+                    blocksToRemove.push_back(Position(r, c));
+                    sameColorFound = true;
+                }
+            }
+        }
+        if (!sameColorFound) 
+        {
+            blocksToRemove.push_back(Position(row, col));
+            int count = 0;
+            for (int r = (row-2 > 0 ? row-2 : 0); r <= (row+2 < 19 ? row+2 : 19) && count < 3; r++) {
+    for (int c = (col-2 > 0 ? col-2 : 0); c <= (col+2 < 9 ? col+2 : 9) && count < 3; c++)  {
+                    if (!grid.IsCellEmpty(r, c) && 
+                        !(r == row && c == col) &&
+                        rand() % 2 == 0) {
+                        blocksToRemove.push_back(Position(r, c));
+                        count++;
+                    }
+                }
+            }
+        }
+        for (auto& pos : blocksToRemove) {
+            grid.grid[pos.row][pos.column] = 0;
+        }
+        grid.ClearFullRows();
+        if (!blocksToRemove.empty()) 
+        {
+            PlaySound(explosionSound);
+        }
+
+    }
+}
+        
