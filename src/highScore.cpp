@@ -3,7 +3,6 @@
 #include <vector>
 #include <algorithm>
 
-// File se scores load karna
 std::vector<int> HighScoreManager::LoadHighScores()
 {
     std::vector<int> scores;
@@ -15,29 +14,25 @@ std::vector<int> HighScoreManager::LoadHighScores()
     }
     file.close();
 
-    // Agar file khali hai to default scores bhar do
     if (scores.empty())
     {
         scores = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     }
-    std::sort(scores.rbegin(), scores.rend()); // Baray se chota sort
+    std::sort(scores.begin(), scores.end(),std::greater<int>()); 
     return scores;
 }
 
-// Naya score save karna
 void HighScoreManager::SaveScore(int newScore)
 {
     std::vector<int> scores = LoadHighScores();
-    scores.push_back(newScore);                // Naya score dalo
-    std::sort(scores.rbegin(), scores.rend()); // Sort karo
+    scores.push_back(newScore);                
+    std::sort(scores.begin(), scores.end(),std::greater<int>()); 
 
-    // Sirf top 10 rakho
     if (scores.size() > 10)
     {
         scores.resize(10);
     }
 
-    // File mein wapas likho (Overwrite)
     std::ofstream file("highscores.txt");
     for (int s : scores)
     {

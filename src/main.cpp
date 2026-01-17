@@ -103,7 +103,11 @@ int main()
 
             if (game.gameOver)
             {
-                HighScoreManager::SaveScore(game.score);
+                if (!game.scoreSaved)
+                {
+                    HighScoreManager::SaveScore(game.score);
+                    game.scoreSaved = true;
+                }
                 DrawRectangle(0, 0, 500, 620, Fade(BLACK, 0.7f));
                 DrawTextEx(font, "GAME OVER", {130, 250}, 50, 2, RED);
                 DrawText("Press 1 to Restart", 160, 320, 20, WHITE);

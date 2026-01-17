@@ -18,6 +18,8 @@ Game::Game()
     clearSound = LoadSound("Sounds/clear.mp3");
     hardDropSound = LoadSound("Sounds/harddrop.mp3");
 
+    scoreSaved = false;
+
     canHold = true;
     hasHeldBlock = false;
     holdSound = LoadSound("Sounds/hold.mp3");
@@ -285,6 +287,7 @@ void Game::Reset()
     isPaused = false;
     canHold = true;
     hasHeldBlock = false;
+    scoreSaved = false;
 }
 
 void Game::UpdateScore(int linesCleared, int moveDownPoints)

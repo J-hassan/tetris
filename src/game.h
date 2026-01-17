@@ -14,6 +14,7 @@ public:
     int score;
     Music music;
     bool isPaused = false;
+    bool scoreSaved;
     void Reset();
     void HardDrop();
     void DrawGhostPiece();
