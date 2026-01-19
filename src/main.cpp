@@ -80,6 +80,7 @@ int main()
             if (!game.GetEffects()->HasActiveLineClearAnimation()) 
             {
                 game.HandleInput();
+                 game.UpdateBomb(GetFrameTime());
                 if (EventTriggered())
                 {
                     game.MoveBlockDown();

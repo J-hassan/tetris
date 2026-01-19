@@ -29,10 +29,15 @@ Game::Game()
 
     heldBack = IBlock();
     
-    // NEW: Initialize effects
     effects = new Effects();
     combo = 0;
     lastClearedLines = 0;
+    
+    // NEW: Initialize bomb system
+    hasBomb = false;
+    activeBomb = Bomb();
+    bombSound = LoadSound("Sounds/rotate.mp3");  // Reuse existing sound or add new
+    explosionSound = LoadSound("Sounds/clear.mp3");  // Reuse or add new
 }
 
 Game::~Game()
@@ -41,10 +46,11 @@ Game::~Game()
     UnloadSound(clearSound);
     UnloadSound(hardDropSound);
     UnloadSound(holdSound);
+    UnloadSound(bombSound);
+    UnloadSound(explosionSound);
     UnloadMusicStream(music);
     CloseAudioDevice();
     
-    // NEW: Cleanup effects
     delete effects;
 }
 
@@ -64,10 +70,149 @@ void Game::Reset()
     gameTimer = 0.0f;
     difficultyLevel = 1;
     
-    // NEW: Reset effects
     effects->Reset();
     combo = 0;
     lastClearedLines = 0;
+    
+    // NEW: Reset bomb
+    hasBomb = false;
+    activeBomb = Bomb();
+}
+
+// NEW: Check if bomb should spawn (10% chance)
+bool Game::ShouldSpawnBomb() {
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> dist(1, 100);
+    
+    return dist(gen) <= 10;  // 10% chance
+}
+
+// NEW: Spawn a bomb
+void Game::SpawnBomb() {
+    if (hasBomb) return;  // Only one bomb at a time
+    
+    // Random column (0-9)
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> colDist(0, 9);
+    std::uniform_int_distribution<int> colorDist(1, 7);
+    
+    int column = colDist(gen);
+    int color = colorDist(gen);
+    
+    activeBomb = Bomb(color, column);
+    hasBomb = true;
+    
+    PlaySound(bombSound);
+}
+
+// NEW: Update bomb (call this in main loop)
+void Game::UpdateBomb(float deltaTime) {
+    if (!hasBomb) {
+        // Check if we should spawn a new bomb
+        if (ShouldSpawnBomb()) {
+            SpawnBomb();
+        }
+        return;
+    }
+    
+    activeBomb.Update(deltaTime);
+    
+    // Check if bomb should fall
+    if (activeBomb.ShouldFall()) {
+        Position bombPos = activeBomb.GetPosition();
+        
+        // Check if bomb can fall further
+        if (bombPos.row >= 19) {
+            // Bomb reached bottom - explode
+            ExplodeBomb();
+        } else if (!grid.IsCellEmpty(bombPos.row + 1, bombPos.column)) {
+            // Bomb hit something - explode
+            ExplodeBomb();
+        } else {
+            // Bomb continues falling
+            activeBomb.Fall();
+        }
+    }
+}
+
+// NEW: Calculate blast radius based on color match
+int Game::CalculateBlastRadius(int bombColor, int targetColor) {
+    if (bombColor == targetColor) {
+        return 1;  // 3x3 area (radius 1 = center + 1 in each direction)
+    } else {
+        return 0;  // 2x2 area (radius 0 = only adjacent cells)
+    }
+}
+
+// NEW: Clear cells in radius around explosion
+void Game::ClearCellsInRadius(int centerRow, int centerCol, int radius) {
+    int cellsCleared = 0;
+    
+    for (int dr = -radius; dr <= radius; dr++) {
+        for (int dc = -radius; dc <= radius; dc++) {
+            int r = centerRow + dr;
+            int c = centerCol + dc;
+            
+            // Check if cell is in bounds
+            if (r >= 0 && r < 20 && c >= 0 && c < 10) {
+                if (grid.grid[r][c] != 0) {
+                    cellsCleared++;
+                    grid.grid[r][c] = 0;  // Clear the cell
+                    
+                    // Add particle effect
+                    std::vector<Color> colors = GetCellColors();
+                    Vector2 particlePos = {c * 30.0f + 26.0f, r * 30.0f + 26.0f};
+                    effects->AddParticles(particlePos, ORANGE, 20);
+                }
+            }
+        }
+    }
+    
+    // Award points for cleared cells
+    score += cellsCleared * 10;
+}
+
+// NEW: Explode the bomb
+void Game::ExplodeBomb() {
+    if (!hasBomb) return;
+    
+    Position bombPos = activeBomb.GetPosition();
+    int bombColor = activeBomb.GetColor();
+    
+    // Check what color is at bomb position
+    int targetColor = 0;
+    if (bombPos.row < 20 && bombPos.column < 10) {
+        targetColor = grid.grid[bombPos.row][bombPos.column];
+    }
+    
+    // Calculate blast radius
+    int radius = CalculateBlastRadius(bombColor, targetColor);
+    
+    // Create explosion effect
+    effects->StartScreenShake(10.0f, 0.4f);
+    
+    // Add explosion particles
+    Vector2 explosionCenter = {
+        bombPos.column * 30.0f + 26.0f,
+        bombPos.row * 30.0f + 26.0f
+    };
+    for (int i = 0; i < 100; i++) {
+        effects->AddParticles(explosionCenter, RED, 1);
+        effects->AddParticles(explosionCenter, ORANGE, 1);
+        effects->AddParticles(explosionCenter, YELLOW, 1);
+    }
+    
+    // Clear cells in blast radius
+    ClearCellsInRadius(bombPos.row, bombPos.column, radius);
+    
+    // Play explosion sound
+    PlaySound(explosionSound);
+    
+    // Deactivate bomb
+    activeBomb.Deactivate();
+    hasBomb = false;
 }
 
 Block Game::GetRandomBlock()
@@ -106,6 +251,12 @@ void Game::Draw()
     grid.Draw();
     DrawGhostPiece();
     currentBlock.Draw(11, 11);
+    
+    // NEW: Draw bomb if active
+    if (hasBomb) {
+        activeBomb.Draw(11, 11);
+    }
+    
     switch (nextBlock.id)
     {
     case 3:
@@ -118,10 +269,10 @@ void Game::Draw()
         nextBlock.Draw(270, 270);
         break;
     }
+    
     if(hasHeldBlock)
     {
         DrawText("Hold", 380, 450, 25, WHITE);
-
         DrawRectangleRounded({320, 480, 170, 100}, 0.3, 6, lightBlue);
         
         switch(heldBack.id)
@@ -136,8 +287,6 @@ void Game::Draw()
                 heldBack.Draw(362, 495);
                 break;
         }
-       
-
     }
 }
 

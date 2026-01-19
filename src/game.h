@@ -1,7 +1,8 @@
 #pragma once
 #include "grid.h"
 #include "blocks.cpp"
-#include "effects.h"  // NEW: Include effects
+#include "effects.h"
+#include "bomb.h"
 
 class Game
 {
@@ -24,9 +25,13 @@ public:
     float gameTimer;
     int difficultyLevel;
     
-    // NEW: Public effects access
     Effects* GetEffects() { return effects; }
-    int combo;  // NEW: For combo tracking
+    int combo;
+    
+    // Bomb system (public if called externally)
+    void UpdateBomb(float deltaTime);
+    void SpawnBomb();
+    void ExplodeBomb();
 
 private:
     void MoveBlockLeft();
@@ -54,7 +59,15 @@ private:
 
     void HoldBack();
     
-    // NEW: Effects system
     Effects* effects;
-    int lastClearedLines;  // Track for combo
+    int lastClearedLines;
+    
+    Bomb activeBomb;
+    bool hasBomb;
+    Sound bombSound;
+    Sound explosionSound;
+    
+    int CalculateBlastRadius(int bombColor, int targetColor);
+    void ClearCellsInRadius(int centerRow, int centerCol, int radius);
+    bool ShouldSpawnBomb();
 };
