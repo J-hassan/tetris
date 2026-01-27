@@ -1,5 +1,5 @@
 #include <raylib.h>
-#include <rlgl.h>  
+#include <rlgl.h>
 #include "game.h"
 #include "colors.h"
 #include <iostream>
@@ -47,11 +47,29 @@ void HandleMenuInput(Game &game)
     if (IsKeyPressed(KEY_THREE))
         currentState = HELP;
     if (IsKeyPressed(KEY_FOUR))
-        currentState = MODE;
+    {
+        if (currentState == MENU)
+        {
+            currentState = MODE;
+        }
+        else if (currentState == PAUSED)
+        {
+            currentState = MENU;
+        }
+    }
     if (IsKeyPressed(KEY_FIVE))
-        CloseWindow();
-    if (IsKeyPressed(KEY_FIVE) && currentState == PAUSED)
-        currentState = PLAYING;
+    {
+        if (currentState == PAUSED)
+        {
+            // If paused, continue the game instead of closing
+            currentState = PLAYING;
+        }
+        else
+        {
+            // If in Menu or other states, close the window
+            CloseWindow();
+        }
+    }
     if (IsKeyPressed(KEY_P) && currentState == PLAYING)
         currentState = PAUSED;
 }
@@ -75,12 +93,12 @@ int main()
         {
             // NEW: Update effects system
             game.GetEffects()->Update(GetFrameTime());
-            
+
             // Only process game logic if no line clear animation is active
-            if (!game.GetEffects()->HasActiveLineClearAnimation()) 
+            if (!game.GetEffects()->HasActiveLineClearAnimation())
             {
                 game.HandleInput();
-                 game.UpdateBomb(GetFrameTime());
+                game.UpdateBomb(GetFrameTime());
                 if (EventTriggered())
                 {
                     game.MoveBlockDown();
@@ -99,7 +117,7 @@ int main()
                 else
                 {
                     game.level++;
-                    
+
                     // NEW: Trigger level up particle effect
                     game.GetEffects()->AddLevelUpEffect({250, 300});
                 }
@@ -119,11 +137,11 @@ int main()
 
         // 2. Drawing Section
         BeginDrawing();
-        
+
         // NEW: Apply screen shake by translating the entire scene
         rlPushMatrix();
         rlTranslatef(shakeOffset.x, shakeOffset.y, 0);
-        
+
         ClearBackground(darkBlue);
 
         if (currentState == MENU)
@@ -146,10 +164,10 @@ int main()
             DrawTextEx(font, TextFormat("%d", game.level), {450, 120}, 38, 2, YELLOW);
 
             // NEW: Display combo counter if combo is active
-            if (game.combo > 1) 
+            if (game.combo > 1)
             {
-                DrawTextEx(font, TextFormat("Combo: x%d", game.combo), 
-                          {320, 160}, 30, 2, ORANGE);
+                DrawTextEx(font, TextFormat("Combo: x%d", game.combo),
+                           {320, 160}, 30, 2, ORANGE);
             }
 
             char scoreText[10];
@@ -160,7 +178,7 @@ int main()
 
             // Game Draw (grid, blocks, ghost piece, hold piece)
             game.Draw();
-            
+
             // NEW: Draw all visual effects (particles, animations, combo text, etc.)
             game.GetEffects()->Draw();
 
@@ -181,7 +199,7 @@ int main()
                 DrawText("PAUSED", 180, 150, 40, WHITE);
                 DrawText("1. Restart", 180, 250, 20, LIGHTGRAY);
                 DrawText("5. Continue", 180, 300, 20, LIGHTGRAY);
-                DrawText("4. Exit", 180, 350, 20, LIGHTGRAY);
+                DrawText("4. Menu", 180, 350, 20, LIGHTGRAY);
             }
         }
         else if (currentState == HIGHSCORE)
@@ -210,7 +228,7 @@ int main()
         }
         else if (currentState == MODE)
         {
-            DrawText("Select Difficulty Level", 150, 100, 30, WHITE);
+            DrawText("Select Difficulty Level", 100, 100, 30, WHITE);
             DrawText("B: Beginner", 120, 200, 20, LIGHTGRAY);
             DrawText("A: Advance", 120, 250, 20, LIGHTGRAY);
             DrawText("Press 'M' for Menu", 150, 350, 20, LIGHTGRAY);
@@ -223,7 +241,7 @@ int main()
                 game.difficultyLevel = 1;
                 currentState = PLAYING;
             }
-            if(IsKeyPressed(KEY_A))
+            if (IsKeyPressed(KEY_A))
             {
                 game.difficultyLevel = 2;
                 currentState = PLAYING;
@@ -231,7 +249,7 @@ int main()
         }
 
         rlPopMatrix(); // NEW: End screen shake transformation
-        
+
         EndDrawing();
     }
 

@@ -178,16 +178,20 @@ void Game::ClearCellsInRadius(int centerRow, int centerCol, int radius) {
 void Game::ExplodeBomb() {
     if (!hasBomb) return;
     
+  if (!hasBomb) return;
+    
     Position bombPos = activeBomb.GetPosition();
     int bombColor = activeBomb.GetColor();
     
-    // Check what color is at bomb position
-    int targetColor = 0;
-    if (bombPos.row < 20 && bombPos.column < 10) {
-        targetColor = grid.grid[bombPos.row][bombPos.column];
+    int targetRow = bombPos.row;
+    if (targetRow < 19 && !grid.IsCellEmpty(targetRow + 1, bombPos.column)) {
+        targetRow++; 
     }
     
-    // Calculate blast radius
+    // Check what color is at the impact position
+    int targetColor = grid.grid[targetRow][bombPos.column];
+    
+    // Calculate blast radius based on the actual block hit
     int radius = CalculateBlastRadius(bombColor, targetColor);
     
     // Create explosion effect
@@ -204,15 +208,16 @@ void Game::ExplodeBomb() {
         effects->AddParticles(explosionCenter, YELLOW, 1);
     }
     
-    // Clear cells in blast radius
-    ClearCellsInRadius(bombPos.row, bombPos.column, radius);
+    // Clear cells in blast radius 
+    ClearCellsInRadius(targetRow, bombPos.column, radius);
     
     // Play explosion sound
     PlaySound(explosionSound);
-    
+
     // Deactivate bomb
     activeBomb.Deactivate();
     hasBomb = false;
+    
 }
 
 Block Game::GetRandomBlock()
