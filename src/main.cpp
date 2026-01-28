@@ -107,7 +107,7 @@ int main()
 
             // Level and timer update
             game.gameTimer += GetFrameTime();
-            if (game.gameTimer >= 60.0f)
+            if (game.gameTimer >= 120.0f)
             {
                 game.gameTimer = 0.0f;
                 if (game.level == 16)

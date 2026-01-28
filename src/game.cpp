@@ -524,21 +524,10 @@ void Game::HardDrop()
 {
     if (gameOver) return;
 
-    int dropDistance = 0;
-
     while(BlockFits()){
         currentBlock.Move(1,0);
-        dropDistance++;
     }
-    if (dropDistance > 0)
-    {
     currentBlock.Move(-1,0);
-    }
-
-    if(dropDistance > 0)
-    {
-        UpdateScore(0,dropDistance*2);
-    }
     LockBlock();
 
     PlaySound(hardDropSound);
